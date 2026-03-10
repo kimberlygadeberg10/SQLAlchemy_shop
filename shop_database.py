@@ -12,3 +12,14 @@ Base = declarative_base()
 # Step 4: Create a session to talk to the database
 Session = sessionmaker(bind=engine)
 session = Session()
+
+# Step 5: Create the User table
+class User(Base):
+    __tablename__ = 'users'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    email = Column(String, unique=True)
+
+    # Relationship: one user can have many orders
+    orders = relationship("Order", back_populates="user")
