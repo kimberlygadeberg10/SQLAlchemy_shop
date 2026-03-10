@@ -110,3 +110,11 @@ if not session.query(Order).filter_by(user_id=bob.id, product_id=mouse.id).first
 
 session.commit()
 print("Orders added successfully!")
+
+# Step 12: Retrieve and print all users
+print("\nAll Users:")
+users = session.query(User).all()
+for user in users:
+    print(f"ID: {user.id}, Name: {user.name}, Email: {user.email}")
+    
+  
