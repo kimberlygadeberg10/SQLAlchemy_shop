@@ -146,3 +146,36 @@ if user_to_delete:
     session.delete(user_to_delete)
     session.commit()
     print("User deleted successfully!")
+    
+    class Order(Base):
+        __tablename__ = 'orders'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'))
+    product_id = Column(Integer, ForeignKey('products.id'))
+    quantity = Column(Integer)
+    status = Column(Boolean, default=False)  # False = not shipped, True = shipped
+
+    user = relationship("User", back_populates="orders")
+    product = relationship("Product", back_populates="orders")
+    
+    # Step 17: Update order status
+orders = session.query(Order).all()
+for i, order in enumerate(orders):
+    order.status = (i % 2 == 0)  # Mark every other order as shipped
+session.commit()
+print("Order status updated (shipped/not shipped).")
+
+# Step 18: Query unshipped orders
+print("\nUnshipped Orders:")
+unshipped_orders = session.query(Order).filter_by(status=False).all()
+for order in unshipped_orders:
+    print(f"User: {order.user.name}, Product: {order.product.name}, Quantity: {order.quantity}")
+    
+    # Step 19: Count total orders per user
+from sqlalchemy import func
+
+print("\nTotal Orders per User:")
+user_orders = session.query(User.name, func.count(Order.id)).join(Order).group_by(User.id).all()
+for name, count in user_orders:
+    print(f"{name}: {count} order(s)")
