@@ -34,3 +34,16 @@ class Product(Base):
 
     # Relationship: one product can appear in many orders
     orders = relationship("Order", back_populates="product")
+    
+    # Step 7: Create the Order table
+class Order(Base):
+    __tablename__ = 'orders'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'))
+    product_id = Column(Integer, ForeignKey('products.id'))
+    quantity = Column(Integer)
+
+    # Relationships
+    user = relationship("User", back_populates="orders")
+    product = relationship("Product", back_populates="orders")
