@@ -128,3 +128,12 @@ print("\nAll Orders:")
 orders = session.query(Order).all()
 for order in orders:
     print(f"User: {order.user.name}, Product: {order.product.name}, Quantity: {order.quantity}")
+    
+    # Step 15: Update a product's price
+# Example: Change the price of "Laptop" from 1200 to 1100
+laptop_product = session.query(Product).filter_by(name="Laptop").first()
+if laptop_product:
+    print(f"\nOld Laptop Price: ${laptop_product.price}")
+    laptop_product.price = 1100
+    session.commit()
+    print(f"Updated Laptop Price: ${laptop_product.price}")
