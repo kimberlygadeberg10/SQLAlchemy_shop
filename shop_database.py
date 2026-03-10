@@ -81,3 +81,32 @@ if not session.query(User).filter_by(email="bob@example.com").first():
     session.add(User(name="Bob", email="bob@example.com"))
 
 session.commit()
+
+# Step 11: Add sample orders (avoid duplicates)
+# Fetch users and products from the database
+alice = session.query(User).filter_by(email="alice@example.com").first()
+bob = session.query(User).filter_by(email="bob@example.com").first()
+
+laptop = session.query(Product).filter_by(name="Laptop").first()
+mouse = session.query(Product).filter_by(name="Mouse").first()
+keyboard = session.query(Product).filter_by(name="Keyboard").first()
+
+# Only add orders if they don't already exist
+if not session.query(Order).filter_by(user_id=alice.id, product_id=laptop.id).first():
+    order1 = Order(user_id=alice.id, product_id=laptop.id, quantity=1)
+    session.add(order1)
+
+if not session.query(Order).filter_by(user_id=alice.id, product_id=mouse.id).first():
+    order2 = Order(user_id=alice.id, product_id=mouse.id, quantity=2)
+    session.add(order2)
+
+if not session.query(Order).filter_by(user_id=bob.id, product_id=keyboard.id).first():
+    order3 = Order(user_id=bob.id, product_id=keyboard.id, quantity=1)
+    session.add(order3)
+
+if not session.query(Order).filter_by(user_id=bob.id, product_id=mouse.id).first():
+    order4 = Order(user_id=bob.id, product_id=mouse.id, quantity=3)
+    session.add(order4)
+
+session.commit()
+print("Orders added successfully!")
