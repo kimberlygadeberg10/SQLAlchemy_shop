@@ -123,4 +123,8 @@ products = session.query(Product).all()
 for product in products:
     print(f"ID: {product.id}, Name: {product.name}, Price: ${product.price}")
     
-   
+    # Step 14: Retrieve all orders with user and product details
+print("\nAll Orders:")
+orders = session.query(Order).all()
+for order in orders:
+    print(f"User: {order.user.name}, Product: {order.product.name}, Quantity: {order.quantity}")
