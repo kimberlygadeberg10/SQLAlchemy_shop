@@ -62,3 +62,22 @@ session.add_all([user1, user2])
 session.commit()
 
 print("Users added successfully!")
+
+# Step 10: Add sample products
+product1 = Product(name="Laptop", price=1200)
+product2 = Product(name="Mouse", price=25)
+product3 = Product(name="Keyboard", price=45)
+
+# Add to session and commit
+session.add_all([product1, product2, product3])
+session.commit()
+
+print("Products added successfully!")
+
+if not session.query(User).filter_by(email="alice@example.com").first():
+    session.add(User(name="Alice", email="alice@example.com"))
+
+if not session.query(User).filter_by(email="bob@example.com").first():
+    session.add(User(name="Bob", email="bob@example.com"))
+
+session.commit()
