@@ -47,3 +47,8 @@ class Order(Base):
     # Relationships
     user = relationship("User", back_populates="orders")
     product = relationship("Product", back_populates="orders")
+    
+    # Step 8: Create all tables in the database
+Base.metadata.create_all(engine)
+
+print("Tables created successfully!")
