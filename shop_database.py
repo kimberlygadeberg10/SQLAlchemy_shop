@@ -52,3 +52,13 @@ class Order(Base):
 Base.metadata.create_all(engine)
 
 print("Tables created successfully!")
+
+# Step 9: Add sample users
+user1 = User(name="Alice", email="alice@example.com")
+user2 = User(name="Bob", email="bob@example.com")
+
+# Add to session and commit
+session.add_all([user1, user2])
+session.commit()
+
+print("Users added successfully!")
