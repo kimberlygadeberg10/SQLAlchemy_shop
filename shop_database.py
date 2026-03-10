@@ -137,3 +137,12 @@ if laptop_product:
     laptop_product.price = 1100
     session.commit()
     print(f"Updated Laptop Price: ${laptop_product.price}")
+    
+    # Step 16: Delete a user by ID
+# Example: Delete Bob (assume his ID is 2)
+user_to_delete = session.query(User).filter_by(id=2).first()
+if user_to_delete:
+    print(f"\nDeleting User: {user_to_delete.name} (ID: {user_to_delete.id})")
+    session.delete(user_to_delete)
+    session.commit()
+    print("User deleted successfully!")
