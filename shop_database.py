@@ -1,19 +1,18 @@
-# Import necessary SQLAlchemy tools needed to build the database
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Boolean
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+# Import necessary SQLAlchemy modules
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Boolean, func
+from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
-# Step 2: Create the database engine
+# Create engine and session
 engine = create_engine('sqlite:///shop.db')
-
-# Step 3: Create a base class for our tables
 Base = declarative_base()
-
-# Step 4: Create a session to talk to the database
 Session = sessionmaker(bind=engine)
 session = Session()
 
-# Step 5: Create the User table
+
+# -------------------------
+# Define Tables
+# -------------------------
+
 class User(Base):
     __tablename__ = 'users'
 
@@ -21,10 +20,9 @@ class User(Base):
     name = Column(String)
     email = Column(String, unique=True)
 
-    # Relationship: one user can have many orders
     orders = relationship("Order", back_populates="user")
-    
-    # Step 6: Create the Product table
+
+
 class Product(Base):
     __tablename__ = 'products'
 
@@ -32,10 +30,9 @@ class Product(Base):
     name = Column(String)
     price = Column(Integer)
 
-    # Relationship: one product can appear in many orders
     orders = relationship("Order", back_populates="product")
-    
-    # Step 7: Create the Order table
+
+
 class Order(Base):
     __tablename__ = 'orders'
 
@@ -43,36 +40,23 @@ class Order(Base):
     user_id = Column(Integer, ForeignKey('users.id'))
     product_id = Column(Integer, ForeignKey('products.id'))
     quantity = Column(Integer)
+    status = Column(Boolean, default=False)  # False = not shipped
 
-    # Relationships
     user = relationship("User", back_populates="orders")
     product = relationship("Product", back_populates="orders")
-    
-    # Step 8: Create all tables in the database
-Base.metadata.create_all(engine)
 
+
+# -------------------------
+# Create Tables
+# -------------------------
+
+Base.metadata.create_all(engine)
 print("Tables created successfully!")
 
-# Step 9: Add sample users
-user1 = User(name="Alice", email="alice@example.com")
-user2 = User(name="Bob", email="bob@example.com")
 
-# Add to session and commit
-session.add_all([user1, user2])
-session.commit()
-
-print("Users added successfully!")
-
-# Step 10: Add sample products
-product1 = Product(name="Laptop", price=1200)
-product2 = Product(name="Mouse", price=25)
-product3 = Product(name="Keyboard", price=45)
-
-# Add to session and commit
-session.add_all([product1, product2, product3])
-session.commit()
-
-print("Products added successfully!")
+# -------------------------
+# Insert Users
+# -------------------------
 
 if not session.query(User).filter_by(email="alice@example.com").first():
     session.add(User(name="Alice", email="alice@example.com"))
@@ -81,9 +65,30 @@ if not session.query(User).filter_by(email="bob@example.com").first():
     session.add(User(name="Bob", email="bob@example.com"))
 
 session.commit()
+print("Users added successfully!")
 
-# Step 11: Add sample orders (avoid duplicates)
-# Fetch users and products from the database
+
+# -------------------------
+# Insert Products
+# -------------------------
+
+if not session.query(Product).filter_by(name="Laptop").first():
+    session.add(Product(name="Laptop", price=1200))
+
+if not session.query(Product).filter_by(name="Mouse").first():
+    session.add(Product(name="Mouse", price=25))
+
+if not session.query(Product).filter_by(name="Keyboard").first():
+    session.add(Product(name="Keyboard", price=45))
+
+session.commit()
+print("Products added successfully!")
+
+
+# -------------------------
+# Insert Orders
+# -------------------------
+
 alice = session.query(User).filter_by(email="alice@example.com").first()
 bob = session.query(User).filter_by(email="bob@example.com").first()
 
@@ -91,91 +96,107 @@ laptop = session.query(Product).filter_by(name="Laptop").first()
 mouse = session.query(Product).filter_by(name="Mouse").first()
 keyboard = session.query(Product).filter_by(name="Keyboard").first()
 
-# Only add orders if they don't already exist
 if not session.query(Order).filter_by(user_id=alice.id, product_id=laptop.id).first():
-    order1 = Order(user_id=alice.id, product_id=laptop.id, quantity=1)
-    session.add(order1)
+    session.add(Order(user_id=alice.id, product_id=laptop.id, quantity=1))
 
 if not session.query(Order).filter_by(user_id=alice.id, product_id=mouse.id).first():
-    order2 = Order(user_id=alice.id, product_id=mouse.id, quantity=2)
-    session.add(order2)
+    session.add(Order(user_id=alice.id, product_id=mouse.id, quantity=2))
 
 if not session.query(Order).filter_by(user_id=bob.id, product_id=keyboard.id).first():
-    order3 = Order(user_id=bob.id, product_id=keyboard.id, quantity=1)
-    session.add(order3)
+    session.add(Order(user_id=bob.id, product_id=keyboard.id, quantity=1))
 
 if not session.query(Order).filter_by(user_id=bob.id, product_id=mouse.id).first():
-    order4 = Order(user_id=bob.id, product_id=mouse.id, quantity=3)
-    session.add(order4)
+    session.add(Order(user_id=bob.id, product_id=mouse.id, quantity=3))
 
 session.commit()
 print("Orders added successfully!")
 
-# Step 12: Retrieve and print all users
+
+# -------------------------
+# Queries
+# -------------------------
+
+# Retrieve all users
 print("\nAll Users:")
 users = session.query(User).all()
 for user in users:
     print(f"ID: {user.id}, Name: {user.name}, Email: {user.email}")
-    
-    # Step 13: Retrieve and print all products
+
+
+# Retrieve all products
 print("\nAll Products:")
 products = session.query(Product).all()
 for product in products:
     print(f"ID: {product.id}, Name: {product.name}, Price: ${product.price}")
-    
-    # Step 14: Retrieve all orders with user and product details
+
+
+# Retrieve all orders
 print("\nAll Orders:")
 orders = session.query(Order).all()
 for order in orders:
     print(f"User: {order.user.name}, Product: {order.product.name}, Quantity: {order.quantity}")
-    
-    # Step 15: Update a product's price
-# Example: Change the price of "Laptop" from 1200 to 1100
+
+
+# -------------------------
+# Update Product Price
+# -------------------------
+
 laptop_product = session.query(Product).filter_by(name="Laptop").first()
+
 if laptop_product:
     print(f"\nOld Laptop Price: ${laptop_product.price}")
     laptop_product.price = 1100
     session.commit()
     print(f"Updated Laptop Price: ${laptop_product.price}")
-    
-    # Step 16: Delete a user by ID
-# Example: Delete Bob (assume his ID is 2)
-user_to_delete = session.query(User).filter_by(id=2).first()
+
+
+# -------------------------
+# Delete User
+# -------------------------
+
+user_to_delete = session.query(User).filter_by(name="Bob").first()
+
 if user_to_delete:
-    print(f"\nDeleting User: {user_to_delete.name} (ID: {user_to_delete.id})")
+    print(f"\nDeleting User: {user_to_delete.name}")
     session.delete(user_to_delete)
     session.commit()
     print("User deleted successfully!")
-    
-    class Order(Base):
-        __tablename__ = 'orders'
 
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'))
-    product_id = Column(Integer, ForeignKey('products.id'))
-    quantity = Column(Integer)
-    status = Column(Boolean, default=False)  # False = not shipped, True = shipped
 
-    user = relationship("User", back_populates="orders")
-    product = relationship("Product", back_populates="orders")
-    
-    # Step 17: Update order status
+# -------------------------
+# Bonus: Order Status
+# -------------------------
+
 orders = session.query(Order).all()
+
 for i, order in enumerate(orders):
-    order.status = (i % 2 == 0)  # Mark every other order as shipped
+    order.status = (i % 2 == 0)
+
 session.commit()
-print("Order status updated (shipped/not shipped).")
+print("\nOrder status updated (shipped / not shipped)")
 
-# Step 18: Query unshipped orders
+
+# -------------------------
+# Query Unshipped Orders
+# -------------------------
+
 print("\nUnshipped Orders:")
-unshipped_orders = session.query(Order).filter_by(status=False).all()
-for order in unshipped_orders:
-    print(f"User: {order.user.name}, Product: {order.product.name}, Quantity: {order.quantity}")
-    
-    # Step 19: Count total orders per user
-from sqlalchemy import func
 
-print("\nTotal Orders per User:")
-user_orders = session.query(User.name, func.count(Order.id)).join(Order).group_by(User.id).all()
-for name, count in user_orders:
+unshipped_orders = session.query(Order).filter_by(status=False).all()
+
+for order in unshipped_orders:
+    user_name = order.user.name if order.user else "Deleted User"
+    product_name = order.product.name if order.product else "Deleted Product"
+
+    print(f"User: {user_name}, Product: {product_name}, Quantity: {order.quantity}")
+
+# -------------------------
+# Count Orders Per User
+# -------------------------
+
+print("\nTotal Orders Per User:")
+
+order_counts = session.query(User.name, func.count(Order.id)).join(Order).group_by(User.id).all()
+
+for name, count in order_counts:
     print(f"{name}: {count} order(s)")
